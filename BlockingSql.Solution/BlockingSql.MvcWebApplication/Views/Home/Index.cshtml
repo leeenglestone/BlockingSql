@@ -1,31 +1,87 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+﻿@model BlockingSql.MvcWebApplication.Models.BlockingSqlModel
+@{
+    ViewBag.Title = "Blocking SQL Statements";
+    Layout = null;
 }
+<style type="text/css">
+    body {
+        background-color: #000000;
+        color: #cccccc;
+        font-family: arial;
+        font-size: 0.75em;
+    }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
+    table {
+        border-collapse: collapse;
+    }
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
-</div>
+    table td {
+        border: 1px solid #ccc;
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    a.kill-process {
+        background-color: red;
+        color: #000000;
+        display: block;
+        margin: 5px;
+        padding: 5px;
+        text-align: center;
+        border-radius: 5px;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    a:link,
+    a:visited,
+    a:hover,
+    a:active {
+        color: orange
+    }
+</style>
+
+<h1>Blocking SQL Statements</h1>
+
+<table>
+    <tr>
+        <th>Server</th>
+        <th>Session Id</th>
+        <th>SQL</th>
+        <th>Login Name</th>
+        <th>Blocking Session Id</th>
+        <th>Host Name</th>
+        <th>Database Name</th>
+        <th>Program Name</th>
+    </tr>
+
+    @foreach (var blockingSqlStatement in Model.BlockingSqlStatements)
+    {
+        var isBlocked = blockingSqlStatement.BlockingSessionId.GetValueOrDefault() > 0;
+        var rowBackground = isBlocked ? "#333" : "#000";
+
+        <tr style="background-color:@rowBackground;">
+            <td class="text-center">@blockingSqlStatement.Server</td>
+            <td class="text-center">@blockingSqlStatement.SessionId<a name="@(blockingSqlStatement.Server)-@(blockingSqlStatement.SessionId)"></a></td>
+            <td>@blockingSqlStatement.SqlText</td>
+            <td>@blockingSqlStatement.LoginName</td>
+
+            @if (isBlocked)
+            {
+                <td class="text-center"><a href="#@(blockingSqlStatement.Server)-@blockingSqlStatement.BlockingSessionId.GetValueOrDefault()">@blockingSqlStatement.BlockingSessionId.GetValueOrDefault()</a></td>
+            }
+            else
+            {
+                <td class="text-center">@blockingSqlStatement.BlockingSessionId.GetValueOrDefault()</td>
+            }
+
+            <td>@blockingSqlStatement.HostName</td>
+            <td>@blockingSqlStatement.DatabaseName</td>
+            <td>@blockingSqlStatement.ProgramName</td>
+        </tr>
+    }
+</table>
